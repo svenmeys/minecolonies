@@ -62,17 +62,14 @@ public abstract class AbstractTileEntityRack extends TileEntity
         @Override
         public void setStackInSlot(final int slot, final @Nonnull ItemStack stack)
         {
-            super.setStackInSlot(slot, stack);
+            validateSlotIndex(slot);
+            final boolean changed = !stack.equals(this.stacks.get(slot));
+            this.stacks.set(slot, stack);
+            if (changed)
+            {
+                onContentsChanged(slot);
+            }
             updateWarehouseIfAvailable(stack);
-        }
-
-        @NotNull
-        @Override
-        public ItemStack extractItem(final int slot, final int amount, final boolean simulate)
-        {
-            final ItemStack result = super.extractItem(slot, amount, simulate);
-            updateItemStorage();
-            return result;
         }
     }
 
