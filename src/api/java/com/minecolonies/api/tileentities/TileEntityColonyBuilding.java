@@ -357,6 +357,11 @@ public class TileEntityColonyBuilding extends AbstractTileEntityColonyBuilding i
                 colonyId = tempColony.getID();
             }
         }
+        
+        if (!getWorld().isRemote && colonyId != 0 && colony == null)
+        {
+            updateColonyReferences();
+        }
 
         /*
          * We want a new inventory every tick.
