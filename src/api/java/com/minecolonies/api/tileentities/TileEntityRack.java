@@ -195,27 +195,33 @@ public class TileEntityRack extends AbstractTileEntityRack
     @Override
     public void updateItemStorage()
     {
-        content.clear();
-        for (int slot = 0; slot < inventory.getSlots(); slot++)
+        if (world != null && !world.isRemote)
         {
-            final ItemStack stack = inventory.getStackInSlot(slot);
-
-            if (ItemStackUtils.isEmpty(stack))
+            content.clear();
+            for (int slot = 0; slot < inventory.getSlots(); slot++)
             {
-                continue;
+                final ItemStack stack = inventory.getStackInSlot(slot);
+
+                if (ItemStackUtils.isEmpty(stack))
+                {
+                    continue;
+                }
+
+                final ItemStorage storage = new ItemStorage(stack.copy());
+                int amount = ItemStackUtils.getSize(stack);
+                if (content.containsKey(storage))
+                {
+                    amount += content.remove(storage);
+                }
+                content.put(storage, amount);
             }
 
-            final ItemStorage storage = new ItemStorage(stack.copy());
-            int amount = ItemStackUtils.getSize(stack);
-            if (content.containsKey(storage))
+            if (world != null)
             {
-                amount += content.remove(storage);
+                updateBlockState();
+                markDirty();
             }
-            content.put(storage, amount);
         }
-
-        updateBlockState();
-        markDirty();
     }
 
     /**
@@ -265,10 +271,16 @@ public class TileEntityRack extends AbstractTileEntityRack
                 getOtherChest().setMain(false);
             }
 
-            world.setBlockState(pos, typeHere);
+            if (!world.getBlockState(pos).equals(typeHere))
+            {
+                world.setBlockState(pos, typeHere);
+            }
             if (typeNeighbor != null)
             {
-                world.setBlockState(this.pos.subtract(relativeNeighbor), typeNeighbor);
+                if (!world.getBlockState(this.pos.subtract(relativeNeighbor)).equals(typeHere))
+                {
+                    world.setBlockState(this.pos.subtract(relativeNeighbor), typeNeighbor);
+                }
             }
         }
     }
